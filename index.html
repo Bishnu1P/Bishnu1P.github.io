@@ -979,22 +979,27 @@
 
         <div class="contact-form-box">
           <h3 style="font-family:'DM Serif Display',serif; font-size:1.25rem; margin-bottom:1.25rem; color:var(--text-primary);">Send a Message</h3>
-          <div class="form-group">
-            <label>Your Name</label>
-            <input type="text" placeholder="e.g. Aarav Sharma">
-          </div>
-          <div class="form-group">
-            <label>Email Address</label>
-            <input type="email" placeholder="your@email.com">
-          </div>
-          <div class="form-group">
-            <label>Message</label>
-            <textarea placeholder="Tell me what's on your mind..."></textarea>
-          </div>
-          <button class="form-submit">Send Message</button>
-          <p id="form-note" style="font-size:0.8rem; color:var(--text-muted); margin-top:0.6rem; text-align:center; display:none;">
-            ✓ Message sent! (Hook this to a backend or EmailJS to make it live.)
-          </p>
+          <form id="contact-form" action="https://formspree.io/f/mvznkbrz" method="POST">
+            <div class="form-group">
+              <label>Your Name</label>
+              <input type="text" name="name" placeholder="e.g. Aarav Sharma" required>
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" name="email" placeholder="your@email.com" required>
+            </div>
+            <div class="form-group">
+              <label>Message</label>
+              <textarea name="message" placeholder="Tell me what's on your mind..." required></textarea>
+            </div>
+            <button type="submit" class="form-submit">Send Message</button>
+            <p id="form-success" style="font-size:0.85rem; color:var(--green); margin-top:0.75rem; text-align:center; display:none; font-weight:500;">
+              ✓ Message sent! I'll get back to you soon.
+            </p>
+            <p id="form-error" style="font-size:0.85rem; color:#c0392b; margin-top:0.75rem; text-align:center; display:none;">
+              ✗ Something went wrong. Please try again or email me directly.
+            </p>
+          </form>
         </div>
       </div>
     </div>
@@ -1010,6 +1015,40 @@
       entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
     }, { threshold: 0.12 });
     document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Formspree live form submission
+    const form = document.getElementById('contact-form');
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const submitBtn = form.querySelector('.form-submit');
+      const successMsg = document.getElementById('form-success');
+      const errorMsg = document.getElementById('form-error');
+
+      submitBtn.textContent = 'Sending...';
+      submitBtn.disabled = true;
+      successMsg.style.display = 'none';
+      errorMsg.style.display = 'none';
+
+      try {
+        const response = await fetch('https://formspree.io/f/mvznkbrz', {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (response.ok) {
+          successMsg.style.display = 'block';
+          form.reset();
+        } else {
+          errorMsg.style.display = 'block';
+        }
+      } catch (err) {
+        errorMsg.style.display = 'block';
+      }
+
+      submitBtn.textContent = 'Send Message';
+      submitBtn.disabled = false;
+    });
   </script>
 </body>
 </html>
